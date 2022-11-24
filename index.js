@@ -2,6 +2,8 @@ const express = require("express");
 const mongoos = require("mongoose");
 const items = require("./routes/api/Item");
 const path = require("path");
+const winston = require('winston');
+const logger = require('./logger')
 
 const app = express();
 app.use(express.json());
@@ -18,13 +20,20 @@ app.get("/user", function (req, res) {
 });
 app.use("/api/items", items);
 
-// if(process.env.NODE_ENV === "production"){
-//     app.use(express.static('client/build'))
 
-//     app.get('*',(req,res)=>{
-//         res.sendFile(path.resolve(__dirname,'client','build','index.html'))
-//     })
-// }
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple(),
+  }));
+}
+
+if(process.env.NODE_ENV === "production"){
+    app.use(express.static('client/build'))
+
+    app.get('*',(req,res)=>{
+        res.sendFile(path.resolve(__dirname,'client','build','index.html'))
+    })
+}
 
 const port = process.env.PORT || 5000;
 
